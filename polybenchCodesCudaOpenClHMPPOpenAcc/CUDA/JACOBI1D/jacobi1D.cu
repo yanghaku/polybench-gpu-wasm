@@ -125,9 +125,9 @@ void runJacobi1DCUDA(DATA_TYPE* A, DATA_TYPE* B, DATA_TYPE* A_outputFromGpu, DAT
 	for (int t = 0; t < TSTEPS ; t++)
 	{
 		runJacobiCUDA_kernel1 <<< grid, block >>> (Agpu, Bgpu);
-		cudaThreadSynchronize();
+		cudaDeviceSynchronize();
 		runJacobiCUDA_kernel2 <<< grid, block>>> (Agpu, Bgpu);
-		cudaThreadSynchronize();
+		cudaDeviceSynchronize();
 	}
 
 	t_end = rtclock();

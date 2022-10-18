@@ -175,9 +175,9 @@ void doitgenCuda(DATA_TYPE* A, DATA_TYPE* C4, DATA_TYPE* sum, DATA_TYPE* sum_out
 	for (int r = 0; r < NR; r++)
 	{
 		doitgen_kernel1 <<<grid, block>>> (sumGpu, AGpu, C4Gpu, r);
-		cudaThreadSynchronize();
+		cudaDeviceSynchronize();
 		doitgen_kernel2 <<<grid, block>>> (sumGpu, AGpu, C4Gpu, r);
-		cudaThreadSynchronize();
+		cudaDeviceSynchronize();
 	}
 
 	t_end = rtclock();

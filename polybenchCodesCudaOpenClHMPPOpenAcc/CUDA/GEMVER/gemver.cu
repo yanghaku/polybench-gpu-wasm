@@ -231,11 +231,11 @@ void gemverCuda(DATA_TYPE* A, DATA_TYPE* B, DATA_TYPE* x, DATA_TYPE* y, DATA_TYP
 	
 	t_start = rtclock();
 	gemver_kernel1<<< grid1, block1 >>>(A_gpu,v1_gpu,v2_gpu, u1_gpu, u2_gpu);
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 	gemver_kernel2<<< grid2, block2 >>>(A_gpu,x_gpu,y_gpu, z_gpu);
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 	gemver_kernel3<<< grid3, block3 >>>(A_gpu,x_gpu,w_gpu);
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 	t_end = rtclock();
 	fprintf(stdout, "GPU Runtime: %0.6lfs\n", t_end - t_start);
 

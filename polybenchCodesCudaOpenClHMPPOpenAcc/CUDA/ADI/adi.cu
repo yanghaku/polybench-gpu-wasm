@@ -252,25 +252,25 @@ void adiCuda(DATA_TYPE* A, DATA_TYPE* B, DATA_TYPE* X, DATA_TYPE* B_outputFromGp
 	{
 		
 		adi_kernel1<<<grid1, block1>>>(A_gpu, B_gpu, X_gpu);
-		cudaThreadSynchronize();
+		cudaDeviceSynchronize();
 		adi_kernel2<<<grid1, block1>>>(A_gpu, B_gpu, X_gpu);
-		cudaThreadSynchronize();
+		cudaDeviceSynchronize();
 		adi_kernel3<<<grid1, block1>>>(A_gpu, B_gpu, X_gpu);
-		cudaThreadSynchronize();
+		cudaDeviceSynchronize();
 	
 		for (int i1 = 1; i1 < N; i1++)
 		{
 			adi_kernel4<<<grid1, block1>>>(A_gpu, B_gpu, X_gpu, i1);
-			cudaThreadSynchronize();
+			cudaDeviceSynchronize();
 		}
 
 		adi_kernel5<<<grid1, block1>>>(A_gpu, B_gpu, X_gpu);
-		cudaThreadSynchronize();
+		cudaDeviceSynchronize();
 		
 		for (int i1 = 0; i1 < N-2; i1++)
 		{
 			adi_kernel6<<<grid1, block1>>>(A_gpu, B_gpu, X_gpu, i1);
-			cudaThreadSynchronize();
+			cudaDeviceSynchronize();
 		}
 	}
 

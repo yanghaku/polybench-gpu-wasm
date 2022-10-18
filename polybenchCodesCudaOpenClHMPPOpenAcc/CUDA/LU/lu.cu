@@ -154,12 +154,12 @@ void luCuda(DATA_TYPE* A, DATA_TYPE* A_outputFromGpu)
 	{
 		grid1.x = (unsigned int)(ceil((float)(N - (k + 1)) / ((float)block1.x)));
 		lu_kernel1<<<grid1, block1>>>(AGpu, k);
-		cudaThreadSynchronize();
+		cudaDeviceSynchronize();
 
 		grid2.x = (unsigned int)(ceil((float)(N - (k + 1)) / ((float)block2.x)));
 		grid2.y = (unsigned int)(ceil((float)(N - (k + 1)) / ((float)block2.y)));
 		lu_kernel2<<<grid2, block2>>>(AGpu, k);
-		cudaThreadSynchronize();
+		cudaDeviceSynchronize();
 	}
 	
 	t_end = rtclock();

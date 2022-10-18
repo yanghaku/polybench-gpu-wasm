@@ -25,6 +25,7 @@
 #include <cuda.h>
 
 #include "../../common/polybenchUtilFuncts.h"
+#include "../../common/polybench.c"
 
 //define the error threshold for the results "not matching"
 #define PERCENT_DIFF_ERROR_THRESHOLD 0.05
@@ -175,9 +176,9 @@ void doitgenCuda(DATA_TYPE* A, DATA_TYPE* C4, DATA_TYPE* sum, DATA_TYPE* sum_out
 	for (int r = 0; r < NR; r++)
 	{
 		doitgen_kernel1 <<<grid, block>>> (sumGpu, AGpu, C4Gpu, r);
-		cudaThreadSynchronize();
+		cudaDeviceSynchronize();
 		doitgen_kernel2 <<<grid, block>>> (sumGpu, AGpu, C4Gpu, r);
-		cudaThreadSynchronize();
+		cudaDeviceSynchronize();
 	}
 
 	t_end = rtclock();
