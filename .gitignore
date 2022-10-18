@@ -19,3 +19,7 @@
 # Temp Files
 *~
 #*#
+
+# for cmake project in clion
+*.idea
+*build*
