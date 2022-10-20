@@ -58,7 +58,7 @@ function(compile_to_wasm target_name source_file)
             OUTPUT ${target_name}.wasm ${file_name}.opt.bc ${file_name}.bc ${file_name}.fatbin ${file_name}.fatbin.bc
             COMMAND ${CMAKE_CUDA_COMPILER} ${source_file} -O3 -noeh -m64 -dopt=on -ccbin ${CLANG} -allow-unsupported-compiler -Xcompiler '${CLANG_COMPILE_FLAGS}' -c -o ${file_name}.bc
             COMMAND ${CMAKE_CUDA_COMPILER} ${source_file} -O3 -noeh -m64 -dopt=on -ccbin ${CLANG} -allow-unsupported-compiler -Xcompiler '${CLANG_COMPILE_FLAGS}' -fatbin -o ${file_name}.fatbin
-            COMMAND opt --load-pass-plugin ${PLUGIN_FILE_1} --load-pass-plugin ${PLUGIN_FILE_2} --enable-new-pm --passes='default<O3>,cuda-wasm,libc64' -S ${file_name}.bc -o ${file_name}.opt.bc
+            COMMAND opt --load-pass-plugin ${PLUGIN_FILE_1} --load-pass-plugin ${PLUGIN_FILE_2} --enable-new-pm --passes='default<O3>,cuda-wasm,libc64' ${file_name}.bc -o ${file_name}.opt.bc
             COMMAND ${BIN2BC} ${file_name}.fatbin -o ${file_name}.fatbin.bc
             COMMAND ${WASI_SDK_CLANG} ${WASI_SDK_LD_FLAGS} ${STUB_FILE_1} ${STUB_FILE_2} ${file_name}.opt.bc ${file_name}.fatbin.bc -o ${target_name}.wasm
             DEPENDS ${source_file}
