@@ -1,15 +1,8 @@
 cmake_minimum_required(VERSION 3.19)
-
-if (NOT DEFINED CUDAToolkit_ROOT)
-    set(CUDAToolkit_ROOT /usr/local/cuda)
-endif ()
-
-message("CUDAToolkit path = ${CUDAToolkit_ROOT}")
-include_directories(${CUDAToolkit_ROOT}/include)
-set(CMAKE_CUDA_COMPILER ${CUDAToolkit_ROOT}/bin/nvcc)
-
-#-----------------------------------------------------------------------------------------------------------------------
 project(polybench-gpu-wasm CUDA)
+find_package(CUDAToolkit REQUIRED)
+include_directories(${CUDAToolkit_INCLUDE_DIRS})
+
 set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -fno-rtti -O3 -flto -fno-exceptions -DPOLYBENCH_TIME -URUN_ON_CPU)
 set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} -fno-rtti -O3 -flto -fno-exceptions -DPOLYBENCH_TIME -URUN_ON_CPU)
 add_compile_options(-O3 -w -noeh -m64 -dopt=on -DPOLYBENCH_TIME)
@@ -56,8 +49,8 @@ function(compile_to_wasm target_name source_file)
     get_filename_component(file_name ${source_file} NAME_WE)
     add_custom_command(
             OUTPUT ${target_name}.wasm ${file_name}.bc ${file_name}.fatbin ${file_name}.fatbin.bc
-            COMMAND ${CMAKE_CUDA_COMPILER} ${source_file} -O3 -noeh -m64 -dlto -dopt=on -ccbin ${CLANG} -allow-unsupported-compiler -Xcompiler '${CLANG_COMPILE_FLAGS}' -c -o ${file_name}.bc
-            COMMAND ${CMAKE_CUDA_COMPILER} ${source_file} -O3 -noeh -m64 -dlto -dopt=on -ccbin ${CLANG} -allow-unsupported-compiler -Xcompiler '${CLANG_COMPILE_FLAGS}' -fatbin -o ${file_name}.fatbin
+            COMMAND ${CUDAToolkit_NVCC_EXECUTABLE} ${source_file} -O3 -noeh -m64 -dlto -dopt=on -ccbin ${CLANG} -allow-unsupported-compiler -Xcompiler '${CLANG_COMPILE_FLAGS}' -c -o ${file_name}.bc
+            COMMAND ${CUDAToolkit_NVCC_EXECUTABLE} ${source_file} -O3 -noeh -m64 -dlto -dopt=on -ccbin ${CLANG} -allow-unsupported-compiler -Xcompiler '${CLANG_COMPILE_FLAGS}' -fatbin -o ${file_name}.fatbin
             COMMAND ${BIN2BC} ${file_name}.fatbin -o ${file_name}.fatbin.bc
             COMMAND ${WASI_SDK_CLANG} ${WASI_SDK_LD_FLAGS} ${STUB_FILE_1} ${STUB_FILE_2} ${file_name}.bc ${file_name}.fatbin.bc -o ${target_name}.wasm
             DEPENDS ${source_file}
