@@ -41,7 +41,6 @@ add_executable(syrk CUDA/SYRK/syrk.cu)
 
 set(CLANG /opt/clang+llvm-15.0.1/bin/clang)
 set(WASI_SDK_CLANG /opt/wasi-sdk/bin/clang)
-set(CLANG_COMPILE_FLAGS ${CMAKE_C_FLAGS} -emit-llvm -fno-exceptions -fPIE -fPIC -flto)
 set(WASI_SDK_LD_FLAGS ${CMAKE_C_FLAGS} -fno-exceptions -fPIE -fPIC -msimd128 -mbulk-memory -Wl,--allow-undefined)
 
 set(CUDA_WASI_TOOLKIT_ROOT /opt/cuda-wasm-toolkit)
@@ -50,17 +49,17 @@ set(PLUGIN_FILE_2 ${CUDA_WASI_TOOLKIT_ROOT}/plugins/liblibc64-pass.so)
 set(STUB_FILE_1 ${CUDA_WASI_TOOLKIT_ROOT}/lib/cuda-runtime-stub.bc)
 set(STUB_FILE_2 ${CUDA_WASI_TOOLKIT_ROOT}/lib/libc64-stub.bc)
 set(BIN2BC ${CUDA_WASI_TOOLKIT_ROOT}/bin/bin2bc)
+set(CLANG_COMPILE_FLAGS ${CMAKE_C_FLAGS} -emit-llvm -fno-exceptions -fPIE -fPIC -flto -fpass-plugin=${PLUGIN_FILE_1} -fpass-plugin=${PLUGIN_FILE_2})
 
 function(compile_to_wasm target_name source_file)
     set(source_file "${CMAKE_CURRENT_LIST_DIR}/${source_file}")
     get_filename_component(file_name ${source_file} NAME_WE)
     add_custom_command(
-            OUTPUT ${target_name}.wasm ${file_name}.opt.bc ${file_name}.bc ${file_name}.fatbin ${file_name}.fatbin.bc
-            COMMAND ${CMAKE_CUDA_COMPILER} ${source_file} -O3 -noeh -m64 -dopt=on -ccbin ${CLANG} -allow-unsupported-compiler -Xcompiler '${CLANG_COMPILE_FLAGS}' -c -o ${file_name}.bc
-            COMMAND ${CMAKE_CUDA_COMPILER} ${source_file} -O3 -noeh -m64 -dopt=on -ccbin ${CLANG} -allow-unsupported-compiler -Xcompiler '${CLANG_COMPILE_FLAGS}' -fatbin -o ${file_name}.fatbin
-            COMMAND opt --load-pass-plugin ${PLUGIN_FILE_1} --load-pass-plugin ${PLUGIN_FILE_2} --enable-new-pm --passes='default<O3>,cuda-wasm,libc64' ${file_name}.bc -o ${file_name}.opt.bc
+            OUTPUT ${target_name}.wasm ${file_name}.bc ${file_name}.fatbin ${file_name}.fatbin.bc
+            COMMAND ${CMAKE_CUDA_COMPILER} ${source_file} -O3 -noeh -m64 -dlto -dopt=on -ccbin ${CLANG} -allow-unsupported-compiler -Xcompiler '${CLANG_COMPILE_FLAGS}' -c -o ${file_name}.bc
+            COMMAND ${CMAKE_CUDA_COMPILER} ${source_file} -O3 -noeh -m64 -dlto -dopt=on -ccbin ${CLANG} -allow-unsupported-compiler -Xcompiler '${CLANG_COMPILE_FLAGS}' -fatbin -o ${file_name}.fatbin
             COMMAND ${BIN2BC} ${file_name}.fatbin -o ${file_name}.fatbin.bc
-            COMMAND ${WASI_SDK_CLANG} ${WASI_SDK_LD_FLAGS} ${STUB_FILE_1} ${STUB_FILE_2} ${file_name}.opt.bc ${file_name}.fatbin.bc -o ${target_name}.wasm
+            COMMAND ${WASI_SDK_CLANG} ${WASI_SDK_LD_FLAGS} ${STUB_FILE_1} ${STUB_FILE_2} ${file_name}.bc ${file_name}.fatbin.bc -o ${target_name}.wasm
             DEPENDS ${source_file}
     )
     add_custom_target(${target_name}.wasm.target ALL DEPENDS ${target_name}.wasm)
